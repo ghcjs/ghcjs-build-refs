@@ -1,0 +1,90 @@
+[submodule "cabal"]
+	path = cabal
+	url = https://github.com/ghcjs/cabal.git
+[submodule "ghc-packages/libraries/array"]
+	path = ghc-packages/libraries/array
+	url = https://github.com/ghc/packages-array.git
+[submodule "ghc-packages/libffi-tarballs"]
+	path = ghc-packages/libffi-tarballs
+	url = https://github.com/ghc/libffi-tarballs.git
+[submodule "ghc-packages/libraries/base"]
+	path = ghc-packages/libraries/base
+	url = https://github.com/ghc/packages-base.git
+[submodule "ghc-packages/libraries/deepseq"]
+	path = ghc-packages/libraries/deepseq
+	url = https://github.com/ghc/packages-deepseq.git
+[submodule "ghc-packages/libraries/directory"]
+	path = ghc-packages/libraries/directory
+	url = https://github.com/ghc/packages-directory.git
+[submodule "ghc-packages/libraries/dph"]
+	path = ghc-packages/libraries/dph
+	url = https://github.com/ghc/packages-dph.git
+[submodule "ghc-packages/libraries/filepath"]
+	path = ghc-packages/libraries/filepath
+	url = https://github.com/ghc/packages-filepath.git
+[submodule "ghc-packages/libraries/ghc-prim"]
+	path = ghc-packages/libraries/ghc-prim
+	url = https://github.com/ghc/packages-ghc-prim.git
+[submodule "ghc-packages/libraries/haskell98"]
+	path = ghc-packages/libraries/haskell98
+	url = https://github.com/ghc/packages-haskell98.git
+[submodule "ghc-packages/libraries/haskell2010"]
+	path = ghc-packages/libraries/haskell2010
+	url = https://github.com/ghc/packages-haskell2010.git
+[submodule "ghc-packages/libraries/hoopl"]
+	path = ghc-packages/libraries/hoopl
+	url = https://github.com/ghc/packages-hoopl.git
+[submodule "ghc-packages/libraries/hpc"]
+	path = ghc-packages/libraries/hpc
+	url = https://github.com/ghc/packages-hpc.git
+[submodule "ghc-packages/libraries/integer-gmp"]
+	path = ghc-packages/libraries/integer-gmp
+	url = https://github.com/ghc/packages-integer-gmp.git
+[submodule "ghc-packages/libraries/integer-simple"]
+	path = ghc-packages/libraries/integer-simple
+	url = https://github.com/ghc/packages-integer-simple.git
+[submodule "ghc-packages/libraries/old-locale"]
+	path = ghc-packages/libraries/old-locale
+	url = https://github.com/ghc/packages-old-locale.git
+[submodule "ghc-packages/libraries/old-time"]
+	path = ghc-packages/libraries/old-time
+	url = https://github.com/ghc/packages-old-time.git
+[submodule "ghc-packages/libraries/process"]
+	path = ghc-packages/libraries/process
+	url = https://github.com/ghc/packages-process.git
+[submodule "ghc-packages/libraries/template-haskell"]
+	path = ghc-packages/libraries/template-haskell
+	url = https://github.com/ghc/packages-template-haskell.git
+[submodule "ghc-packages/libraries/unix"]
+	path = ghc-packages/libraries/unix
+	url = https://github.com/ghc/packages-unix.git
+[submodule "ghc-packages/utils/haddock"]
+	path = ghc-packages/utils/haddock
+	url = https://github.com/ghc/haddock.git
+[submodule "ghc-packages/utils/hsc2hs"]
+	path = ghc-packages/utils/hsc2hs
+	url = https://github.com/ghc/hsc2hs.git
+[submodule "ghc-source"]
+	path = ghc-source
+	url = https://github.com/ghc/ghc
+[submodule "ghcjs"]
+	path = ghcjs
+	url = https://github.com/ghcjs/ghcjs
+[submodule "ghcjs-base"]
+	path = ghcjs-base
+	url = https://github.com/ghcjs/ghcjs-base
+[submodule "ghcjs-boot"]
+	path = ghcjs-boot
+	url = https://github.com/ghc/ghc
+[submodule "ghcjs-dom"]
+	path = ghcjs-dom
+	url = https://github.com/ghcjs/ghcjs-dom
+[submodule "ghcjs-examples"]
+	path = ghcjs-examples
+	url = https://github.com/ghcjs/ghcjs-examples
+[submodule "ghcjs-jquery"]
+	path = ghcjs-jquery
+	url = https://github.com/ghcjs/ghcjs-jquery
+[submodule "ghcjs-prim"]
+	path = ghcjs-prim
+	url = https://github.com/ghcjs/ghcjs-prim
