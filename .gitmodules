@@ -88,3 +88,6 @@
 [submodule "ghcjs-prim"]
 	path = ghcjs-prim
 	url = https://github.com/ghcjs/ghcjs-prim
+[submodule "shims"]
+	path = shims
+	url = https://github.com/ghcjs/shims
