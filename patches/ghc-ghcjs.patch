@@ -263,7 +263,7 @@ index 6f898fa..def9e2b 100644
              PrimTarget   _ -> CC_Ccc
  
 diff --git a/compiler/main/DriverPipeline.hs b/compiler/main/DriverPipeline.hs
-index aa49e70..9af5000 100644
+index aa49e70..061782d 100644
 --- a/compiler/main/DriverPipeline.hs
 +++ b/compiler/main/DriverPipeline.hs
 @@ -1,5 +1,5 @@
@@ -273,7 +273,7 @@ index aa49e70..9af5000 100644
  -- -fno-cse is needed for GLOBAL_VAR's to behave properly
  
  -----------------------------------------------------------------------------
-@@ -23,6 +23,12 @@ module DriverPipeline (
+@@ -23,6 +23,13 @@ module DriverPipeline (
     compileOne, compileOne',
     link,
  
@@ -282,11 +282,12 @@ index aa49e70..9af5000 100644
 +   PhasePlus(..), CompPipeline(..), PipeEnv(..), PipeState(..),
 +   phaseOutputFilename, getPipeState, getPipeEnv,
 +   hscPostBackendPhase, getLocation, setModLocation, setDynFlags,
-+   runPhase
++   runPhase,
++   LinkBinaryHook(..), linkBinary'
    ) where
  
  #include "HsVersions.h"
-@@ -52,6 +58,8 @@ import LlvmCodeGen      ( llvmFixupAsm )
+@@ -52,6 +59,8 @@ import LlvmCodeGen      ( llvmFixupAsm )
  import MonadUtils
  import Platform
  import TcRnTypes
@@ -295,7 +296,7 @@ index aa49e70..9af5000 100644
  
  import Exception
  import Data.IORef       ( readIORef )
-@@ -61,6 +69,7 @@ import System.IO
+@@ -61,6 +70,7 @@ import System.IO
  import Control.Monad
  import Data.List        ( isSuffixOf )
  import Data.Maybe
@@ -303,7 +304,7 @@ index aa49e70..9af5000 100644
  import System.Environment
  import Data.Char
  
-@@ -525,9 +534,8 @@ runPipeline
+@@ -525,9 +535,8 @@ runPipeline
  runPipeline stop_phase hsc_env0 (input_fn, mb_phase)
               mb_basename output maybe_loc maybe_stub_o
  
@@ -315,7 +316,7 @@ index aa49e70..9af5000 100644
               -- Decide where dump files should go based on the pipeline output
               dflags = dflags0 { dumpPrefix = Just (basename ++ ".") }
               hsc_env = hsc_env0 {hsc_dflags = dflags}
-@@ -719,7 +727,7 @@ pipeLoop phase input_fn = do
+@@ -719,7 +728,7 @@ pipeLoop phase input_fn = do
     _
       -> do liftIO $ debugTraceMsg dflags 4
                                    (ptext (sLit "Running phase") <+> ppr phase)
@@ -324,7 +325,7 @@ index aa49e70..9af5000 100644
             r <- pipeLoop next_phase output_fn
             case phase of
                 HscOut {} ->
-@@ -732,6 +740,15 @@ pipeLoop phase input_fn = do
+@@ -732,6 +741,15 @@ pipeLoop phase input_fn = do
                     return ()
             return r
  
@@ -340,7 +341,7 @@ index aa49e70..9af5000 100644
  -- -----------------------------------------------------------------------------
  -- In each phase, we need to know into what filename to generate the
  -- output.  All the logic about which filenames we generate output
-@@ -853,7 +870,7 @@ runPhase (RealPhase (Cpp sf)) input_fn dflags0
+@@ -853,7 +871,7 @@ runPhase (RealPhase (Cpp sf)) input_fn dflags0
    = do
         src_opts <- liftIO $ getOptionsFromFile dflags0 input_fn
         (dflags1, unhandled_flags, warns)
@@ -349,7 +350,7 @@ index aa49e70..9af5000 100644
         setDynFlags dflags1
         liftIO $ checkProcessArgsResult dflags1 unhandled_flags
  
-@@ -873,7 +890,7 @@ runPhase (RealPhase (Cpp sf)) input_fn dflags0
+@@ -873,7 +891,7 @@ runPhase (RealPhase (Cpp sf)) input_fn dflags0
              -- See #2464,#3457
              src_opts <- liftIO $ getOptionsFromFile dflags0 output_fn
              (dflags2, unhandled_flags, warns)
@@ -358,7 +359,7 @@ index aa49e70..9af5000 100644
              liftIO $ checkProcessArgsResult dflags2 unhandled_flags
              unless (gopt Opt_Pp dflags2) $
                  liftIO $ handleFlagWarnings dflags2 warns
-@@ -906,7 +923,7 @@ runPhase (RealPhase (HsPp sf)) input_fn dflags
+@@ -906,7 +924,7 @@ runPhase (RealPhase (HsPp sf)) input_fn dflags
              -- re-read pragmas now that we've parsed the file (see #3674)
              src_opts <- liftIO $ getOptionsFromFile dflags output_fn
              (dflags1, unhandled_flags, warns)
@@ -367,7 +368,24 @@ index aa49e70..9af5000 100644
              setDynFlags dflags1
              liftIO $ checkProcessArgsResult dflags1 unhandled_flags
              liftIO $ handleFlagWarnings dflags1 warns
-@@ -2153,3 +2170,12 @@ haveRtsOptsFlags dflags =
+@@ -1767,8 +1785,15 @@ getHCFilePackages filename =
+ -- read any interface files), so the user must explicitly specify all
+ -- the packages.
+ 
++data LinkBinaryHook = LinkBinaryHook deriving Typeable
++type instance Hook LinkBinaryHook = DynFlags -> [FilePath] -> [PackageId] -> IO ()
++
+ linkBinary :: DynFlags -> [FilePath] -> [PackageId] -> IO ()
+-linkBinary dflags o_files dep_packages = do
++linkBinary dflags =
++  fromMaybe linkBinary' (lookupHook LinkBinaryHook $ hooks dflags) dflags
++
++linkBinary' :: DynFlags -> [FilePath] -> [PackageId] -> IO ()
++linkBinary' dflags o_files dep_packages = do
+     let platform = targetPlatform dflags
+         mySettings = settings dflags
+         verbFlags = getVerbFlags dflags
+@@ -2153,3 +2178,12 @@ haveRtsOptsFlags dflags =
           isJust (rtsOpts dflags) || case rtsOptsEnabled dflags of
                                          RtsOptsSafeOnly -> False
                                          _ -> True
@@ -761,6 +779,81 @@ index cc8dfe3..87ae5e4 100644
    where
          ways0 = ways dflags
  
+diff --git a/compiler/main/SysTools.lhs b/compiler/main/SysTools.lhs
+index d43826a..6e1465c 100644
+--- a/compiler/main/SysTools.lhs
++++ b/compiler/main/SysTools.lhs
+@@ -7,6 +7,7 @@
+ -----------------------------------------------------------------------------
+ 
+ \begin{code}
++{-# LANGUAGE TypeFamilies #-}
+ module SysTools (
+         -- Initialisation
+         initSysTools,
+@@ -40,8 +41,10 @@ module SysTools (
+         cleanTempDirs, cleanTempFiles, cleanTempFilesExcept,
+         addFilesToClean,
+ 
+-        Option(..)
++        Option(..),
+ 
++        -- Hook for custom dynLib linking
++        LinkDynLibHook(..), linkDynLib'
+  ) where
+ 
+ #include "HsVersions.h"
+@@ -57,6 +60,7 @@ import Platform
+ import Util
+ import DynFlags
+ import Exception
++import Hooks
+ 
+ import Data.IORef
+ import Control.Monad
+@@ -68,6 +72,8 @@ import System.IO.Error as IO
+ import System.Directory
+ import Data.Char
+ import Data.List
++import Data.Maybe (fromMaybe)
++import Data.Typeable
+ import qualified Data.Map as Map
+ import Text.ParserCombinators.ReadP hiding (char)
+ import qualified Text.ParserCombinators.ReadP as R
+@@ -211,6 +217,7 @@ initSysTools mbMinusB
+                                    Just "NO" -> return False
+                                    Just xs -> pgmError ("Bad value for " ++ show key ++ ": " ++ show xs)
+                                    Nothing -> pgmError ("No entry for " ++ show key ++ " in " ++ show settingsFile)
++           readSetting :: (Monad m, Read a) => String -> m a
+            readSetting key = case lookup key mySettings of
+                              Just xs ->
+                                  case maybeRead xs of
+@@ -971,6 +978,7 @@ handleProc pgm phase_name proc = do
+           then does_not_exist
+           else IO.ioError err
+ 
++    does_not_exist :: IO a
+     does_not_exist = throwGhcExceptionIO (InstallationError ("could not execute: " ++ pgm))
+ 
+ 
+@@ -1174,8 +1182,16 @@ linesPlatform xs =
+ 
+ #endif
+ 
++data LinkDynLibHook = LinkDynLibHook deriving Typeable
++type instance Hook LinkDynLibHook =
++  DynFlags -> [String] -> [PackageId] -> IO ()
++
+ linkDynLib :: DynFlags -> [String] -> [PackageId] -> IO ()
+-linkDynLib dflags0 o_files dep_packages
++linkDynLib dflags =
++  fromMaybe linkDynLib' (lookupHook LinkDynLibHook $ hooks dflags) dflags
++
++linkDynLib' :: DynFlags -> [String] -> [PackageId] -> IO ()
++linkDynLib' dflags0 o_files dep_packages
+  = do
+     let -- This is a rather ugly hack to fix dynamically linked
+         -- GHC on Windows. If GHC is linked with -threaded, then
 diff --git a/compiler/nativeGen/AsmCodeGen.lhs b/compiler/nativeGen/AsmCodeGen.lhs
 index a999f8f..42eeb4f 100644
 --- a/compiler/nativeGen/AsmCodeGen.lhs
