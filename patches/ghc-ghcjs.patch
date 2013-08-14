@@ -40,10 +40,10 @@ index b0c9bd3..149968d 100644
  -- ---------------------------------------------------------------------
  -- Find and print local and external declarations for a list of
 diff --git a/compiler/deSugar/DsForeign.lhs b/compiler/deSugar/DsForeign.lhs
-index 1053b91..24c46b5 100644
+index 1053b91..a1c362b 100644
 --- a/compiler/deSugar/DsForeign.lhs
 +++ b/compiler/deSugar/DsForeign.lhs
-@@ -6,7 +6,12 @@
+@@ -6,7 +6,15 @@
  Desugaring foreign declarations (see also DsCCall).
  
  \begin{code}
@@ -53,11 +53,14 @@ index 1053b91..24c46b5 100644
 +module DsForeign ( dsForeigns
 +                 , dsForeigns'
 +                 , DsForeignsHook (..)
++                 , dsFImport, dsCImport, dsFCall, dsPrimCall
++                 , dsFExport, dsFExportDynamic, mkFExportCBits
++                 , toCType
 +                 ) where
  
  #include "HsVersions.h"
  import TcRnMonad        -- temp
-@@ -30,6 +35,7 @@ import TyCon
+@@ -30,6 +38,7 @@ import TyCon
  import Coercion
  import TcEnv
  import TcType
@@ -65,7 +68,7 @@ index 1053b91..24c46b5 100644
  
  import CmmExpr
  import CmmUtils
-@@ -51,6 +57,7 @@ import Util
+@@ -51,6 +60,7 @@ import Util
  
  import Data.Maybe
  import Data.List
@@ -73,7 +76,7 @@ index 1053b91..24c46b5 100644
  \end{code}
  
  Desugaring of @foreign@ declarations is naturally split up into
-@@ -70,11 +77,18 @@ so we reuse the desugaring code in @DsCCall@ to deal with these.
+@@ -70,11 +80,18 @@ so we reuse the desugaring code in @DsCCall@ to deal with these.
  type Binding = (Id, CoreExpr)   -- No rec/nonrec structure;
                                  -- the occurrence analyser will sort it all out
  
